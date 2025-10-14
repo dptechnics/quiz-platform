@@ -9,6 +9,30 @@ export class GameController {
   };
 
   /**
+   * Finish the current question. If a player has not answered the current question this question
+   * will be marked as unanswered for this player.
+   * 
+   * @return {Question} The question that was just finished or undefined when there was no question.
+   */
+  finishQuestion = () => {
+    this.quiz.openToAnswers = false;
+
+    if (this.quiz.currentQuestion < 0 || this.quiz.currentQuestion >= this.quiz.questions.length) {
+      return undefined;
+    }
+
+    this.quiz.players.forEach(player => {
+      if (player.answers.find(answer => answer.question == this.quiz.currentQuestion) == undefined) {
+        player.answers.push(new Answer(this.quiz.currentQuestion, -1, false, false));
+      }
+    });
+    
+    //TODO: emit events
+
+    return this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
+  }
+
+  /**
    * Go to the next question. If the quiz has not yet started this function will start the quiz. If 
    * the quiz has ended this function is a no-op.
    * 
@@ -19,15 +43,8 @@ export class GameController {
       return;
     }
 
-    if (this.quiz.currentQuestion >= 0) {
-      this.quiz.players.forEach(player => {
-        if (player.answers.find(answer => answer.question == this.quiz.currentQuestion) == undefined) {
-          player.answers.push(new Answer(this.quiz.currentQuestion, -1, false, false));
-        }
-      });
-    }
-
     this.quiz.currentQuestion += 1;
+    this.quiz.openToAnswers = true;
 
     //TODO: emit events
     return this.quiz.getQuestion(this.quiz.currentQuestion);
@@ -63,6 +80,11 @@ export class GameController {
 
     if (this.quiz.currentQuestion > this.quiz.questions.length) {
       console.warn('Could not process answer because the quiz has ended');
+      return undefined;
+    }
+
+    if (this.quiz.openToAnswers == false) {
+      console.warn('Could not process answer because the answer window has expired');
       return undefined;
     }
 

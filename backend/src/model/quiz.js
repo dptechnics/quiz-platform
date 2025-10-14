@@ -11,6 +11,7 @@ export class Quiz {
     this.players = new Array();
 
     this.currentQuestion = -1;
+    this.openToAnswers = false;
   };
 
   /**

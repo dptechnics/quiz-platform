@@ -22,7 +22,8 @@ const wsApi = new WebsocketApi(gameController);
 app.get('/api/quiz', httpApi.getQuiz);
 app.get('/api/quiz/prizes', httpApi.getPrizes);
 app.get('/api/quiz/questions', httpApi.getQuestions);
-app.post('/api/quiz/nextquestion', httpApi.postNextQuestion);
+app.post('/api/quiz/question/finish', httpApi.postFinishQuestion);
+app.post('/api/quiz/question/next', httpApi.postNextQuestion);
 app.post('/api/quiz/reset', httpApi.postResetQuestion);
 
 /* Players API */

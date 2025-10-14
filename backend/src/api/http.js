@@ -18,6 +18,20 @@ export class HttpApi {
     res.send(this.gameController.quiz.getQuiz());
   };
 
+  postFinishQuestion = async (req, res) => {
+    const question = this.gameController.finishQuestion();
+    if(question == undefined) {
+      res.status(409).send({ error: 'no active question found'});
+      return;
+    }
+    
+    const answer = await question.getAnswer();
+
+    let pojoQuestion = question.toJS();
+    pojoQuestion.answer = answer;
+    res.status(200).send(pojoQuestion);
+  };
+
   postNextQuestion = (req, res) => {
     res.send(this.gameController.nextQuestion());
   };

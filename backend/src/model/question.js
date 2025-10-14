@@ -20,6 +20,8 @@ export class Question {
     this.choices = data.choices || [];
     this.datasource = data.datasource || "";
     this.answer = data.answer || -1;
+    this.answerValueCacheTime = 0;
+    this.answerValueCache = undefined;
   };
 
   /**
