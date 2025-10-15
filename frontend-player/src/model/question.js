@@ -1,0 +1,29 @@
+import { makeAutoObservable } from "mobx";
+
+export class Question {
+    id = -1;
+    question = 'Waiting for the quiz to begin';
+    time = 20;
+    type = "";
+    choices = [];
+
+    /**
+     * Construct a new question.
+     */
+    constructor() {
+        makeAutoObservable(this);
+    }
+
+    /**
+     * Update the question data.
+     * 
+     * @param {Object} questionData The raw question data to set.
+     */
+    setQuestionData = (questionData) => {
+        this.id = questionData.id;
+        this.question = questionData.question;
+        this.time = questionData.time;
+        this.type = questionData.type;
+        this.choices = questionData.choices || [];
+    };
+}
