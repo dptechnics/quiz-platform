@@ -3,7 +3,7 @@ import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-
 /**
  * Generate a UUIDv4.
  * 
- * @returns A UUIDv4 as a string.
+ * @return A UUIDv4 as a string.
  */
 export const uuidv4 = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -16,7 +16,7 @@ export const uuidv4 = () => {
 /**
  * Generate a random name consisting out of an adjective, color and animal.
  * 
- * @returns A raondom name.
+ * @return A raondom name.
  */
 export const randomName = () => {
   const computerParts = [

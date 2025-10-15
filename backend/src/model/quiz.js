@@ -4,52 +4,22 @@ import { Question } from "./question.js";
  * The Quiz class represents the Quiz that we are currently playing.
  */
 export class Quiz {
+  /**
+   * The supported question types.
+   */
+  static RANKING_MECHANISM = Object.freeze({
+    MULTIPLECHOICE_FIRST_VALUE_SECOND: Symbol('muliplechoice-first-value-second')
+  });
+
   constructor(data) {
     this.title = data.title || "Quiz";
+    this.rankingMechanism = Quiz.RANKING_MECHANISM.MULTIPLECHOICE_FIRST_VALUE_SECOND;
     this.prizes = data.prizes || [];
     this.questions = data.questions?.map((question, idx) => new Question(idx, question));
     this.players = new Array();
 
     this.currentQuestion = -1;
     this.openToAnswers = false;
-  };
-
-  /**
-   * Get the quiz overview.
-   * 
-   * @returns {Object} An overview of the quiz.
-   */
-  getQuiz = () => {
-    return {
-      title: this.title,
-      currentQuestion: this.getQuestion(this.currentQuestion),
-      stats: {
-        prizes: this.prizes.length,
-        players: this.players.length,
-        questions: this.questions.length
-      }
-    }
-  };
-
-  /**
-   * Get a question, without the answer.
-   * 
-   * @param {Number} index The index of the question.
-   * 
-   * @return {Object} The question or message when quiz has not yet started or is ended.
-   */
-  getQuestion = (index) => {
-    if(index < 0) {
-      return { 
-        status: "Quiz has not yet started"
-      };
-    } else if(index >= this.questions.length) {
-      return {
-        status: "Quiz has ended"
-      };
-    }
-
-    return this.questions[index].toJS();
   };
 
   /**

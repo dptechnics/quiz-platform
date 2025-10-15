@@ -28,6 +28,7 @@ app.post('/api/quiz/reset', httpApi.postResetQuestion);
 
 /* Players API */
 app.get('/api/players', httpApi.getPlayers);
+app.get('/api/players/ranking', httpApi.getRanking);
 app.post('/api/players', httpApi.postPlayer);
 app.post('/api/players/:id/answer', httpApi.postAnswer);
 app.delete('/api/players/:id', httpApi.deletePlayer);

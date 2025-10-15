@@ -2,34 +2,135 @@ import { Quiz } from "../model/quiz.js";
 import { Answer } from "../model/answer.js";
 import { Player } from "../model/player.js";
 import { Question } from "../model/question.js";
+import { AnswerStats } from "../model/answerstats.js";
 
 export class GameController {
   constructor(quizData) {
     this.quiz = new Quiz(quizData);
+    this.answerTimeout = undefined;
+  };
+
+  /**
+   * Get the quiz overview.
+   * 
+   * @return {Object} An overview of the quiz.
+   */
+  getQuiz = () => {
+    let prevQuestion = "";
+    let curQuestion = "";
+
+    if (this.quiz.currentQuestion < 0) {
+      prevQuestion = "The quiz has not yet started";
+      curQuestion = "The quiz has not yet started";
+    } else if (this.quiz.currentQuestion == 0) {
+      prevQuestion = "The quiz is only at the first question";
+      curQuestion = this.quiz.questions[this.quiz.currentQuestion].toJS();
+    } else if (this.quiz.currentQuestion >= this.quiz.questions.length) {
+      prevQuestion = this.quiz.questions[this.quiz.questions.length - 1].toJS(true);
+      curQuestion = "The quiz has finished";
+    } else {
+      prevQuestion = this.quiz.questions[this.quiz.currentQuestion - 1].toJS(true);
+      curQuestion = this.quiz.questions[this.quiz.currentQuestion].toJS();
+    }
+
+    return {
+      title: this.quiz.title,
+      rankingMechanism: this.quiz.rankingMechanism.description,
+      previousQuestion: prevQuestion,
+      currentQuestion: curQuestion,
+      openToAnswers: this.quiz.openToAnswers,
+      stats: {
+        prizes: this.quiz.prizes.length,
+        players: this.quiz.players.length,
+        questions: this.quiz.questions.length
+      }
+    }
   };
 
   /**
    * Finish the current question. If a player has not answered the current question this question
    * will be marked as unanswered for this player.
    * 
-   * @return {Question} The question that was just finished or undefined when there was no question.
+   * @return {Question} A POJO object containing the question, answers and answer statistics or
+   * undefined when there was no question found.
    */
-  finishQuestion = () => {
+  finishQuestion = async () => {
     this.quiz.openToAnswers = false;
+
+    if (this.answerTimeout != undefined) {
+      clearTimeout(this.answerTimeout);
+      this.answerTimeout = undefined;
+    }
 
     if (this.quiz.currentQuestion < 0 || this.quiz.currentQuestion >= this.quiz.questions.length) {
       return undefined;
     }
 
+    const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
+    if (question == undefined) {
+      return undefined;
+    }
+
+    const answerValue = await question.getAnswer();
+
+    question.stats.reset();
+
     this.quiz.players.forEach(player => {
-      if (player.answers.find(answer => answer.question == this.quiz.currentQuestion) == undefined) {
-        player.answers.push(new Answer(this.quiz.currentQuestion, -1, false, false));
+      question.stats.totalPlayers += 1;
+
+      const answer = player.answers.find(answer => answer.question == this.quiz.currentQuestion);
+      if (answer == undefined) {
+        player.answers.push(new Answer(this.quiz.currentQuestion, question.type, -1, false, false));
+        question.stats.unanswered += 1;
+      } else {
+        question.stats.answered += 1;
+
+        switch (question.type) {
+          case Question.TYPE.MULTIPLECHOICE:
+            if (answer.result) {
+              question.stats.correct += 1;
+            } else {
+              question.stats.wrong += 1;
+            }
+            break;
+
+          case Question.TYPE.VALUE:
+            question.stats.average += answer.answer;
+
+            if (answerValue != undefined) {
+              const diff = Math.abs(answer.answer - answerValue);
+
+              if (question.stats.worstAnswer == undefined) {
+                question.stats.worstAnswer = answer.answer;
+              } else {
+                const worstDiff = Math.abs(question.stats.worstAnswer - answerValue);
+                if (diff > worstDiff) {
+                  question.stats.worstAnswer = answer.answer;
+                  question.stats.worstDiff = answer.diff;
+                }
+              }
+
+              if (question.stats.bestAnswer == undefined) {
+                question.stats.bestAnswer = answer.answer;
+              } else {
+                const bestDiff = Math.abs(question.stats.bestAnswer - answerValue);
+                if (diff < bestDiff) {
+                  question.stats.bestAnswer = answer.answer;
+                  question.stats.bestDiff = diff;
+                }
+              }
+            }
+            break;
+        }
       }
     });
-    
-    //TODO: emit events
 
-    return this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
+    if (question.stats.answered > 0) {
+      question.stats.average = parseInt(question.stats.average / question.stats.answered);
+    }
+
+    //TODO: emit events
+    return question.toJS(true, true);
   }
 
   /**
@@ -38,16 +139,51 @@ export class GameController {
    * 
    * @return {Question} The question to which the quiz has advanced.
    */
-  nextQuestion = () => {
-    if (this.quiz.currentQuestion > this.quiz.questions.length) {
-      return;
+  nextQuestion = async () => {
+    if (this.quiz.currentQuestion >= this.quiz.questions.length) {
+      return {
+        status: "The quiz has finished"
+      };
+    }
+
+    /* Finish the current question before going to the next one */
+    if (this.quiz.openToAnswers) {
+      await this.finishQuestion();
     }
 
     this.quiz.currentQuestion += 1;
+
+    if (this.quiz.currentQuestion >= this.quiz.questions.length) {
+      return {
+        status: "The quiz has finished"
+      };
+    }
+
     this.quiz.openToAnswers = true;
 
+    if (this.answerTimeout != undefined) {
+      clearTimeout(this.answerTimeout);
+      this.answerTimeout = undefined;
+    }
+
+    const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
+    if (question == undefined) {
+      console.warn('The next question is undefined, cannot start timer');
+      return {
+        status: "Next question is undefined"
+      };
+    }
+
+    if (question.time > 0) {
+      this.answerTimeout = setTimeout(() => {
+        console.info(`Automatically finished question ${question.id} after ${question.time}s`);
+        this.finishQuestion();
+      }, question.time * 1000);
+    }
+
+
     //TODO: emit events
-    return this.quiz.getQuestion(this.quiz.currentQuestion);
+    return question.toJS();
   };
 
   /**
@@ -58,6 +194,10 @@ export class GameController {
 
     this.quiz.players.forEach(player => {
       player.resetAnswers();
+    });
+
+    this.quiz.questions.forEach(question => {
+      question.stats.reset();
     });
 
     //TODO: emit events
@@ -112,7 +252,7 @@ export class GameController {
 
     const result = await question.getResult(answer);
 
-    player.answers.push(new Answer(this.quiz.currentQuestion, answer, result, true));
+    player.answers.push(new Answer(this.quiz.currentQuestion, question.type, answer, result, true));
     console.info(`Player ${player.id}:${player.name} answered ${answer} to question ` +
       `${this.quiz.currentQuestion} with result ${result}`);
 
@@ -153,5 +293,66 @@ export class GameController {
   removePlayer = (id) => {
     const index = this.quiz.players.findIndex(player => player.id === id);
     return index >= 0 ? this.quiz.players.splice(index, 1)[0] : undefined;
+  };
+
+  /**
+   * Rank the players with the winning player at index 0. This function will use the multiple choice
+   * first and value second ranking mechanism. This means that players are first ranked based on the
+   * amount of correctly answered multiple choice questions. In the second step players are ranked 
+   * using the value questions, meaning the value questions are effectively used as tie-break 
+   * questions. It is therefore assumed that there are no value questions before multiplechoice 
+   * questions in the quiz data.
+   * 
+   * Scores on a question are normalized between [0, 100]:
+   *  - For multiple-choice: 0 is wrong, 100 is right
+   *  - For value questions: The player that answered with the value closest to the right value gets
+   *    100 and the player that answered with the value the most different from the right value gets
+   *    0. 
+   * 
+   * This way we can combine multiple value questions.
+   * 
+   * @return {Array} An array of all players ranked with the winning player at index 0. 
+   */
+  rankPlayersMultiplechoiceFirstValueSecond = async () => {
+    /* Reset the player ranking */
+    this.quiz.players.forEach(player => {
+      player.ranking = 0;
+    });
+
+    for (const question of this.quiz.questions) {
+      /* Only rank questions that are already answered */
+      if (question.id > this.quiz.currentQuestion) {
+        continue;
+      } else if(question.id == this.quiz.currentQuestion && this.quiz.openToAnswers) {
+        continue;
+      }
+
+      for (const player of this.quiz.players) {
+        const answer = player.answers.find(answer => answer.question == question.id);
+        if(answer != undefined) {
+          if (answer.type === Question.TYPE.MULTIPLECHOICE && answer.answered && answer.result) {
+            player.ranking += 100;
+          } else if (answer.type === Question.TYPE.VALUE && answer.answered) {
+            player.ranking += await question.getValueRanking(answer.answered);
+          }
+        }
+      }
+    }
+
+    return this.quiz.players.slice().sort((a, b) => b.ranking - a.ranking)
+      .map(player => player.toJS());
+  };
+
+  /**
+   * Rank the players with the winning player at index 0.
+   * 
+   * @return {Array} An array of all players ranked with the winning player at index 0.
+   */
+  rankPlayers = async () => {
+    switch (this.quiz.rankingMechanism) {
+      case Quiz.RANKING_MECHANISM.MULTIPLECHOICE_FIRST_VALUE_SECOND:
+      default:
+        return this.rankPlayersMultiplechoiceFirstValueSecond();
+    }
   };
 }

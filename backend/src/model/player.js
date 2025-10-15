@@ -16,6 +16,7 @@ export class Player {
     this.name = name || randomName();
     this.websocket = websocket || -1;
     this.answers = new Array();
+    this.ranking = 0;
   };
 
   /**
@@ -23,13 +24,13 @@ export class Player {
    * 
    * @param includeToken When true, the security token of the player is returned.
    * 
-   * @returns {Object} A POJO representing a this player.
+   * @return {Object} A POJO representing a this player.
    */
   toJS = (includeToken = false) => {
     let player = {
       id: this.id,
       name: this.name,
-      websocket: this.websocket,
+      ranking: this.ranking,
       answers: this.answers.map(answer => answer.toJS())
     };
 

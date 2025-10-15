@@ -15,25 +15,21 @@ export class HttpApi {
   };
 
   getQuiz = (req, res) => {
-    res.send(this.gameController.quiz.getQuiz());
+    res.send(this.gameController.getQuiz());
   };
 
   postFinishQuestion = async (req, res) => {
-    const question = this.gameController.finishQuestion();
-    if(question == undefined) {
-      res.status(409).send({ error: 'no active question found'});
+    const question = await this.gameController.finishQuestion();
+    if (question == undefined) {
+      res.status(409).send({ error: 'no active question found' });
       return;
     }
-    
-    const answer = await question.getAnswer();
 
-    let pojoQuestion = question.toJS();
-    pojoQuestion.answer = answer;
-    res.status(200).send(pojoQuestion);
+    res.status(200).send(question);
   };
 
-  postNextQuestion = (req, res) => {
-    res.send(this.gameController.nextQuestion());
+  postNextQuestion = async (req, res) => {
+    res.send(await this.gameController.nextQuestion());
   };
 
   postResetQuestion = (req, res) => {
@@ -46,9 +42,9 @@ export class HttpApi {
       req.params?.id,
       req.body?.token,
       req.body?.answer);
-    
-    if(player == undefined) {
-      res.status(401).send({ error: `Player, token or question is invalid`});
+
+    if (player == undefined) {
+      res.status(401).send({ error: `Player, token or question is invalid` });
       return;
     }
 
@@ -62,10 +58,14 @@ export class HttpApi {
   getQuestions = (req, res) => {
     res.send(this.gameController.quiz.getQuestions());
   };
-  
+
   getPlayers = (req, res) => {
     res.send(this.gameController.quiz.players.map(player => player.toJS()));
   };
+
+  getRanking = async (req, res) => {
+    res.send(await this.gameController.rankPlayers());
+  }
 
   postPlayer = (req, res) => {
     const player = this.gameController.addPlayer(req.body?.name);
