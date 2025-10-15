@@ -2,12 +2,26 @@ import { Server } from "socket.io";
 import { GameController } from "../controller/gamecontroller.js";
 
 /**
- * The WebsocketApi class groups the websocket calls and routes.
+ * The WsApi class groups the websocket calls and routes.
  */
-export class WebsocketApi {
+export class WsApi {
 
   /**
-   * Construct a new WebsocketApi.
+   * Singleton instance of this class.
+   */
+  static instance = undefined;
+
+  /**
+   * Get the instance of the websocket API.
+   * 
+   * @returns The instance of the websocket API.
+   */
+  static get = () => {
+    return WsApi.instance;
+  }
+
+  /**
+   * Construct a new WsApi.
    * 
    * @param {GameController} gameController The instance of the GameController used in this API.
    * @param {Server} io The websocket server instance.
@@ -15,10 +29,20 @@ export class WebsocketApi {
   constructor(gameController, io) {
     this.gameController = gameController;
     this.io = io;
+
+    WsApi.instance = this;
   };
 
-  emitFinishQuestion = () => {
+  emitResetQuiz = () => {
+    this.io.emit('resetQuiz', { msg: "The quiz has restarted" });
+  };
 
+  emitNextQuestion = (question) => {
+    this.io.emit('newQuestion', question);
+  };
+
+  emitFinishedQuestion = (question) => {
+    this.io.emit('finishedQuestion', question);
   };
 
   defineRoutes = () => {
@@ -69,7 +93,7 @@ export class WebsocketApi {
         const p = this.gameController.quiz.players.find(player => {
           return player.id == id && player.token == token && player.websocket.id == socket.id
         });
-        if(p == undefined) {
+        if (p == undefined) {
           socket.emit("answerQuestion", {
             result: false,
             msg: `Player id or token is invalid or socket session was hijacked`

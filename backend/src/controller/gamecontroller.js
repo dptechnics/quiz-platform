@@ -3,6 +3,7 @@ import { Answer } from "../model/answer.js";
 import { Player } from "../model/player.js";
 import { Question } from "../model/question.js";
 import { AnswerStats } from "../model/answerstats.js";
+import { WsApi } from "../api/ws.js";
 
 export class GameController {
   constructor(quizData) {
@@ -129,9 +130,10 @@ export class GameController {
       question.stats.average = parseInt(question.stats.average / question.stats.answered);
     }
 
-    //TODO: emit events
-    return question.toJS(true, true);
-  }
+    const res = question.toJS(true, true);
+    WsApi.get().emitFinishedQuestion(res);
+    return res;
+  };
 
   /**
    * Go to the next question. If the quiz has not yet started this function will start the quiz. If 
@@ -181,9 +183,9 @@ export class GameController {
       }, question.time * 1000);
     }
 
-
-    //TODO: emit events
-    return question.toJS();
+    const res = question.toJS();
+    WsApi.get().emitNextQuestion(res);
+    return res;
   };
 
   /**
@@ -200,7 +202,7 @@ export class GameController {
       question.stats.reset();
     });
 
-    //TODO: emit events
+    WsApi.get().emitResetQuiz();
   };
 
   /**
@@ -256,7 +258,6 @@ export class GameController {
     console.info(`Player ${player.id}:${player.name} answered ${answer} to question ` +
       `${this.quiz.currentQuestion} with result ${result}`);
 
-    //TODO: emit events
     return player;
   };
 
@@ -323,13 +324,13 @@ export class GameController {
       /* Only rank questions that are already answered */
       if (question.id > this.quiz.currentQuestion) {
         continue;
-      } else if(question.id == this.quiz.currentQuestion && this.quiz.openToAnswers) {
+      } else if (question.id == this.quiz.currentQuestion && this.quiz.openToAnswers) {
         continue;
       }
 
       for (const player of this.quiz.players) {
         const answer = player.answers.find(answer => answer.question == question.id);
-        if(answer != undefined) {
+        if (answer != undefined) {
           if (answer.type === Question.TYPE.MULTIPLECHOICE && answer.answered && answer.result) {
             player.ranking += 100;
           } else if (answer.type === Question.TYPE.VALUE && answer.answered) {

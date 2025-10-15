@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import config from './config.js';
 import quizData from './quizdata.js';
 import { HttpApi } from "./api/http.js";
-import { WebsocketApi } from "./api/ws.js";
+import { WsApi } from "./api/ws.js";
 
 import { GameController } from "./controller/gamecontroller.js";
 
@@ -16,7 +16,7 @@ const io = new Server(server);
 const gameController = new GameController(quizData);
 
 const httpApi = new HttpApi(gameController);
-const wsApi = new WebsocketApi(gameController, io);
+const wsApi = new WsApi(gameController, io);
 
 httpApi.defineRoutes(app);
 wsApi.defineRoutes();
