@@ -4,7 +4,6 @@ import { GameController } from "../controller/gamecontroller.js";
  * The HttpApi class groups the HTTP calls and routes.
  */
 export class HttpApi {
-
   /**
    * Construct a new HttpApi.
    * 
@@ -44,11 +43,11 @@ export class HttpApi {
       req.body?.answer);
 
     if (player == undefined) {
-      res.status(401).send({ error: `Player, token or question is invalid` });
+      res.status(401).send({ error: `Player id or token is invalid` });
       return;
     }
 
-    res.status(200).send(player);
+    res.status(200).send(player.toJS());
   };
 
   getPrizes = (req, res) => {
@@ -86,4 +85,21 @@ export class HttpApi {
 
     res.send(player.toJS());
   }
+
+  defineRoutes = (app) => {
+    /* Quiz API */
+    app.get('/api/quiz', this.getQuiz);
+    app.get('/api/quiz/prizes', this.getPrizes);
+    app.get('/api/quiz/questions', this.getQuestions);
+    app.post('/api/quiz/question/finish', this.postFinishQuestion);
+    app.post('/api/quiz/question/next', this.postNextQuestion);
+    app.post('/api/quiz/reset', this.postResetQuestion);
+
+    /* Players API */
+    app.get('/api/players', this.getPlayers);
+    app.get('/api/players/ranking', this.getRanking);
+    app.post('/api/players', this.postPlayer);
+    app.post('/api/players/:id/answer', this.postAnswer);
+    app.delete('/api/players/:id', this.deletePlayer);
+  };
 }

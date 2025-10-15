@@ -48,7 +48,7 @@ export class Player {
    */
   setWebsocket = (websocket) => {
     this.websocket = websocket;
-    console.info(`Player ${this.id}:${this.name} change to websocket ${this.websocket}`);
+    console.info(`Player ${this.id}:${this.name} change to websocket ${this.websocket.id}`);
   };
 
   /**
