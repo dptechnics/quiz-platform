@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 import { Question } from "./question";
 
 export class Quiz {
-  title = '';
+  title = 'Quiz';
   currentQuestion = null;
 
   /**
@@ -10,7 +10,7 @@ export class Quiz {
    * 
    * @param {String} title The title of the quiz.
    */
-  constructor(title = '') {
+  constructor(title = 'Quiz') {
     this.title = title;
     this.currentQuestion = new Question();
 

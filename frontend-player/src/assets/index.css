@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background: linear-gradient(to top, #003D6D, #008786);
+  flex: 1;
+  padding: 20px;
+  color: #EEE;
+}
+
+.header h1 {
+  margin-top: 5px;
+  margin-bottom: 0px;
+}
+
+.header h1::after {
+  content: "";
+  display: block;
+  width: 40%;
+  height: 2px;
+  background: #213C6B99;
+  margin-top: 5px;
+  border-radius: 1px;
+}
+
+.header p {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 2px;
+  margin-bottom: 25px;
+}
+
+.footer {
+  height: 100px;
+  background-color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.footer p {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 1px;
+  color: #213C6B;
+}
+
+.register {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+
+/*///////////////*/
+
+.button {
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: transparent;
+  border: 2px solid white;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.button:hover {
+  background: rgba(255, 255, 255, 0.1); /* subtle highlight */
+  transform: translateY(-2px);           /* small lift for interactivity */
+}

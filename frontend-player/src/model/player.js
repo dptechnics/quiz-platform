@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx";
 export class Player {
     id = "";
     token = "";
-    name = "";
+    name = "---";
     ranking = 0;
     answers = [];
 
@@ -14,7 +14,7 @@ export class Player {
      * @param {String} token The token of the player.
      * @param {String} name The name of the player.
      */
-    constructor(id = "", token = "", name = "") {
+    constructor(id = "", token = "", name = "---") {
         this.id = id;
         this.token = token;
         this.name = name;

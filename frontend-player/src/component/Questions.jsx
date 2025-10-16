@@ -1,17 +1,7 @@
 import { observer } from "mobx-react-lite";
-import { quizStore } from "./store/QuizStore";
-import { useEffect } from "react";
+import { quizStore } from "../store/QuizStore";
 
-const Register = observer(() => (
-  <div className="card">
-    <p>
-      Click register to take part in the Quiz.
-    </p>
-    <button onClick={() => quizStore.register()}>Register</button>
-  </div>
-));
-
-const Questions = observer(() => (
+export const Questions = observer(() => (
   <div className="card">
     <p>
       {quizStore.quiz.currentQuestion.question}
@@ -44,30 +34,3 @@ const Questions = observer(() => (
     }
   </div>
 ));
-
-const App = observer(() => {
-  useEffect(() => {
-    quizStore.getQuiz();
-    quizStore.connect();
-
-  }, []);
-
-  return (
-    <>
-      <h1>{quizStore.quiz.title}</h1>
-      <p className="read-the-docs">
-        You are {quizStore.player.name}
-      </p>
-
-      {
-        !quizStore.registered && <Register />
-      }
-
-      {
-        quizStore.registered && <Questions />
-      }
-    </>
-  )
-});
-
-export default App
