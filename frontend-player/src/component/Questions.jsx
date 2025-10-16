@@ -4,15 +4,15 @@ import { quizStore } from "../store/QuizStore";
 export const Questions = observer(() => (
   <div className="data">
     <div className="dataContent">
-      <div className="questioncontent">
-        <p>
+      <div>
+        <p className="question">
           {quizStore.quiz.currentQuestion.question}
         </p>
         {
           quizStore.quiz.currentQuestion.type === "multiplechoice" && (
             <>
               {quizStore.quiz.currentQuestion.choices.map((choice, idx) => (
-                <p key={idx}>
+                <label className="radioInput" key={idx}>
                   <input
                     type="radio"
                     name="answers"
@@ -20,17 +20,15 @@ export const Questions = observer(() => (
                     checked={quizStore.currentAnswer === idx}
                     onChange={() => quizStore.setAnswer(idx)}
                   />
-                  <label htmlFor={`choice-${idx}`}>{choice}</label>
-                </p>
+                  {choice}
+                </label>
               ))}
             </>
           )
         }
         {
           quizStore.quiz.currentQuestion.type == "value" &&
-          <>
-            <input type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} />
-          </>
+          <input className="textInput" type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} />
         }
       </div>
     </div>

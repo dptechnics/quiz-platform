@@ -12,14 +12,15 @@ body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   background: linear-gradient(to top, #003D6D, #008786);
   flex: 1;
-  padding: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
   color: #EEE;
   display: flex;
   flex-direction: column;
 }
 
 .header h1 {
-  margin-top: 5px;
+  margin-top: 15px;
   margin-bottom: 0px;
   text-align: center;
 }
@@ -38,7 +39,7 @@ body {
   font-size: 1rem;
   font-weight: 600;
   margin-top: 5px;
-  margin-bottom: 25px;
+  margin-bottom: 0px;
   text-align: center;
 }
 
@@ -89,6 +90,10 @@ body {
   justify-content: center;
 }
 
+.question {
+  margin-top: 0px;
+}
+
 .button {
   padding: 12px 28px;
   font-size: 1rem;
@@ -132,4 +137,79 @@ body {
 .button:focus {
   outline: none;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6); /* glowing focus ring */
+}
+
+.textInput {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: #213C6B;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+  outline: none;
+  transition: all 0.2s ease;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.textInput:focus {
+  border-color: #3EA7A3;
+  box-shadow: 0 0 10px rgba(62, 167, 163, 0.7);
+  background-color: #fff;
+}
+
+.textInput::placeholder {
+  color: #666;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.radioInput {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.radioInput:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.radioInput input[type="radio"] {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.radioInput input[type="radio"]:checked {
+  background-color: #3EA7A3;
+  border-color: white;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.radioInput label {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  flex: 1;
 }
