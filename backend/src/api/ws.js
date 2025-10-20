@@ -115,6 +115,25 @@ export class WsApi {
           msg: player.toJS()
         });
       });
+
+      /* Go to the next question */
+      socket.on('quizNextQuestion', () => {
+        this.gameController.nextQuestion();
+      });
+
+      /* Finish the current question */
+      socket.on('quizFinishQuestion', () => {
+        this.gameController.finishQuestion();
+      });
+
+      /* Reset the quiz */
+      socket.on('quizReset', () => {
+        this.gameController.resetQuiz();
+        socket.emit("quizReset", {
+          result: true
+        });
+      });
+
     });
   };
 }
