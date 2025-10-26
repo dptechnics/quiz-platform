@@ -2,13 +2,13 @@ import { Quiz } from "../model/quiz.js";
 import { Answer } from "../model/answer.js";
 import { Player } from "../model/player.js";
 import { Question } from "../model/question.js";
-import { AnswerStats } from "../model/answerstats.js";
 import { WsApi } from "../api/ws.js";
 
 export class GameController {
   constructor(quizData) {
     this.quiz = new Quiz(quizData);
     this.answerTimeout = undefined;
+    this.passedTime = 0;
   };
 
   /**
@@ -56,6 +56,7 @@ export class GameController {
    * undefined when there was no question found.
    */
   finishQuestion = async () => {
+    console.log(`Finishing question ${this.currentQuestion}`);
     this.quiz.openToAnswers = false;
 
     if (this.answerTimeout != undefined) {
@@ -132,6 +133,12 @@ export class GameController {
 
     const res = question.toJS(true, true);
     WsApi.get().emitFinishedQuestion(res);
+
+    /* Check if the quiz has finished */
+    if(this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
+      console.log('All questions are finished, the full quiz is now finished');
+      WsApi.get().emitQuestionsFinished();
+    }
     return res;
   };
 
@@ -142,7 +149,8 @@ export class GameController {
    * @return {Question} The question to which the quiz has advanced.
    */
   nextQuestion = async () => {
-    if (this.quiz.currentQuestion >= this.quiz.questions.length) {
+    if (this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
+      console.log('The quiz is finished, there is no next question');
       return {
         status: "The quiz has finished"
       };
@@ -154,12 +162,6 @@ export class GameController {
     }
 
     this.quiz.currentQuestion += 1;
-
-    if (this.quiz.currentQuestion >= this.quiz.questions.length) {
-      return {
-        status: "The quiz has finished"
-      };
-    }
 
     this.quiz.openToAnswers = true;
 
@@ -177,10 +179,21 @@ export class GameController {
     }
 
     if (question.time > 0) {
-      this.answerTimeout = setTimeout(() => {
-        console.info(`Automatically finished question ${question.id} after ${question.time}s`);
-        this.finishQuestion();
-      }, question.time * 1000);
+      this.passedTime = 0;
+
+      const handleQuestionTimerTick = () => {
+        if(this.passedTime >= question.time) {
+          console.info(`Automatically finished question ${question.id} after ${question.time}s`);
+          this.finishQuestion();
+          return;
+        }
+
+        this.passedTime += 1;
+        WsApi.get().emitQuestionTick(question.id, this.passedTime, question.time);
+        this.answerTimeout = setTimeout(handleQuestionTimerTick, 1000);
+      };
+
+      this.answerTimeout = setTimeout(handleQuestionTimerTick, 1000);
     }
 
     const res = question.toJS();

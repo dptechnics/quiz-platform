@@ -1,7 +1,7 @@
 import { Quiz } from "../model/quiz";
 import { io } from "socket.io-client";
 import { Player } from "../model/player";
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 
 class QuizStore {
   socket = null;
@@ -10,12 +10,35 @@ class QuizStore {
   quiz = null;
   player = null;
   currentAnswer = undefined;
+  elapsedTime = 0;
+  totalTime = 0;
+  answerConfirmed = false;
+  quizIsFinished = false;
 
   constructor() {
     this.quiz = new Quiz();
     this.player = new Player();
     makeAutoObservable(this);
-  }
+  };
+
+  /**
+   * A computed value that returns a percentage which represents the amount of 
+   * time that is still left to answer the current question.
+   */
+  get percentRemaining() {
+    if (this.totalTime == 0) {
+      return 0;
+    }
+
+    return Math.max(0, ((this.totalTime - this.elapsedTime) / this.totalTime) * 100);
+  };
+
+  /**
+   * This value is true when the user can still answer the current question.
+   */
+  get canAnswer() {
+    return this.percentRemaining > 0;
+  };
 
   /**
    * Set the registered state.
@@ -30,24 +53,29 @@ class QuizStore {
    * Connect to the backend.
    */
   connect = () => {
-    if(this.socket) {
+    if (this.socket) {
       return;
     }
 
     this.socket = io('');
-    
+
     this.socket.on('connect', () => {
-      this.connected = true;
+      runInAction(() => { 
+        this.connected = true;
+      });
       console.log('Connected to the quiz server');
     });
 
     this.socket.on('disconnect', () => {
       this.connected = false;
+      runInAction(() => {
+        this.connected = false;
+      });
       console.log('Lost connection to the quiz server');
     });
 
     this.socket.on('registerPlayer', msg => {
-      if(msg.result) {
+      if (msg.result) {
         this.player.setPlayerData(msg.msg);
         this.setRegistered(true);
         console.log(`Registered with quiz backend as ${this.player.name}`);
@@ -57,13 +85,45 @@ class QuizStore {
     });
 
     this.socket.on('newQuestion', msg => {
-      this.quiz.setCurrentQuestion(msg);
-      this.setAnswer(this.quiz.currentQuestion.type === "multiplechoice" ? -1 : 0);
+      runInAction(() => {
+        this.quiz.setCurrentQuestion(msg);
+        this.answerConfirmed = false;
+        this.totalTime = msg.time;
+        this.elapsedTime = 0;
+        this.setAnswer(this.quiz.currentQuestion.type === "multiplechoice" ? -1 : 0);
+      });
+    });
+
+    this.socket.on('finishedQuestion', msg => {
+      runInAction(() => {
+        this.totalTime = 0;
+        this.elapsedTime = 0;
+      });
+    });
+
+    this.socket.on('questionTick', msg => {
+      runInAction(() => {
+        this.elapsedTime = msg.e;
+        this.totalTime = msg.t;
+      });
     });
 
     this.socket.on('answerQuestion', msg => {
       console.log(msg);
-      //TODO
+      if(msg.result) {
+        runInAction(() => {
+          this.answerConfirmed = true;
+        });
+      } else {
+        //TODO
+      }
+    });
+
+    this.socket.on('questionsFinished', msg => {
+      console.log(msg);
+      runInAction(() => {
+        this.quizIsFinished = true;
+      });
     });
   };
 
@@ -87,11 +147,11 @@ class QuizStore {
    * @return {Boolean} True upon succesfull registration.
    */
   register = (name = undefined) => {
-    if(!this.socket) {
+    if (!this.socket) {
       return;
     }
 
-    if(name) {
+    if (name) {
       this.socket.emit('registerPlayer', {
         name
       });
@@ -113,7 +173,11 @@ class QuizStore {
    * Send the current answer to the backend.
    */
   sendAnswer = async () => {
-    if(!this.socket) {
+    if (!this.socket) {
+      return;
+    }
+
+    if (!this.canAnswer) {
       return;
     }
 

@@ -4,7 +4,7 @@ import { QuizController } from "./QuizController";
 import { useEffect } from "react";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
-
+import { ProgressBar } from "./ProgressBar";
 
 const App = observer(() => {
   useEffect(() => {
@@ -18,6 +18,7 @@ const App = observer(() => {
       <div className="content">
         <Header />
         <QuizController />
+        <ProgressBar />
       </div>
       <Footer />
     </>

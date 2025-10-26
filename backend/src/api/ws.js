@@ -37,8 +37,20 @@ export class WsApi {
     this.io.emit('resetQuiz', { msg: "The quiz has restarted" });
   };
 
+  emitQuestionsFinished = () => {
+    this.io.emit('questionsFinished', { msg: "All questions are asked" });
+  };
+
   emitNextQuestion = (question) => {
     this.io.emit('newQuestion', question);
+  };
+
+  emitQuestionTick = (questionId, elapsedTime, totalTime) => {
+    this.io.emit('questionTick', {
+      "q": questionId,
+      "e": elapsedTime,
+      "t": totalTime
+    });
   };
 
   emitFinishedQuestion = (question) => {

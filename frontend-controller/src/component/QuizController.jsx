@@ -18,29 +18,18 @@ export const QuizController = observer(() => (
       <div className="dataContent">
         <div>
           <p className="question">
-            {quizStore.quiz.currentQuestion.question}
+            {quizStore.quizIsFinished ? 'The quiz is finished, announce the winners' : quizStore.quiz.currentQuestion.question}
           </p>
           {
             quizStore.quiz.currentQuestion.type === "multiplechoice" && (
               <>
                 {quizStore.quiz.currentQuestion.choices.map((choice, idx) => (
                   <label className="radioInput" key={idx}>
-                    <input
-                      type="radio"
-                      name="answers"
-                      value={idx}
-                      checked={quizStore.currentAnswer === idx}
-                      onChange={() => quizStore.setAnswer(idx)}
-                    />
                     {choice}
                   </label>
                 ))}
               </>
             )
-          }
-          {
-            quizStore.quiz.currentQuestion.type == "value" &&
-            <input className="textInput" type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} />
           }
         </div>
       </div>
@@ -48,10 +37,10 @@ export const QuizController = observer(() => (
         <button className="button" onClick={() => handleRestartQuiz()}>
           <IconPlayerTrackPrevFilled size={25} stroke={2} />
         </button>
-        <button className="button" onClick={() => quizStore.finishQuestion()}>
+        <button className={`button ${quizStore.canAnswer ? '' : 'disabled'}`} onClick={() => quizStore.finishQuestion()}>
           <IconPlayerStopFilled size={25} stroke={2} />
         </button>
-        <button className="button" onClick={() => quizStore.nextQuestion()}>
+        <button className={`button ${quizStore.quizIsFinished ? 'disabled' : ''}`} onClick={() => quizStore.nextQuestion()}>
           <IconPlayerPlayFilled size={25} stroke={2} />
         </button>
       </div>

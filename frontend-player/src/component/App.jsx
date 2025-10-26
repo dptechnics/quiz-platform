@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { Quiz } from "./Quiz";
+import { ProgressBar } from "./ProgressBar";
 
 const App = observer(() => {
   useEffect(() => {
@@ -17,6 +18,7 @@ const App = observer(() => {
       <div className="content">
         <Header />
         <Quiz />
+        <ProgressBar />
       </div>
       <Footer />
     </>

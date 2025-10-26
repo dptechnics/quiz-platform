@@ -12,8 +12,6 @@ body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   background: linear-gradient(to top, #003D6D, #008786);
   flex: 1;
-  padding-left: 20px;
-  padding-right: 20px;
   color: #EEE;
   display: flex;
   flex-direction: column;
@@ -53,6 +51,7 @@ body {
 }
 
 .footer p {
+  font-size: 1rem;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-weight: 600;
   margin-bottom: 10px;
@@ -95,37 +94,25 @@ body {
 }
 
 .button {
-  padding: 12px 28px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #2F8887, #3EA7A3);
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.25s ease;
-}
-
-.button {
   padding: 16px 32px;
   font-size: 1.3rem;
   font-weight: 600;
   color: white;
-  background-color: #2F8887; /* keep your gradient if needed */
-  border: 2px solid rgba(255, 255, 255, 0.8); /* sharper, brighter border */
+  background: linear-gradient(135deg, #2F8887, #3EA7A3);
+  background-color: #2F8887;
+  border: 2px solid rgba(255, 255, 255, 0.8);
   border-radius: 20px;
   cursor: pointer;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.7); /* stronger white glow */
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   width: 100%;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .button:hover {
   background-color: #3ea7a3;
   transform: translateY(-3px);
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.9); /* more intense glow on hover */
-  border-color: rgba(255, 255, 255, 1); /* full white on hover */
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 1);
 }
 
 .button:active {
@@ -136,7 +123,27 @@ body {
 
 .button:focus {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6); /* glowing focus ring */
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6);
+}
+
+.button.disabled {
+  background-color: #888;
+  background-image: none;
+  color: #ccc;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
+.button.disabled:hover,
+.button.disabled:active,
+.button.disabled:focus {
+  background-color: #888;
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: none;
 }
 
 .textInput {
@@ -212,4 +219,12 @@ body {
   color: white;
   cursor: pointer;
   flex: 1;
+}
+
+.progressBar {
+  height: 8px;
+  background-color: #51b9b8;
+  position: relative;
+  left: 0px;
+  transition: width 0.3s ease;
 }

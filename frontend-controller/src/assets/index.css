@@ -12,8 +12,6 @@ body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   background: linear-gradient(to top, #003D6D, #008786);
   flex: 1;
-  padding-left: 20px;
-  padding-right: 20px;
   color: #EEE;
   display: flex;
   flex-direction: column;
@@ -102,15 +100,37 @@ body {
 
 .button {
   padding: 16px 32px;
+  font-size: 1.3rem;
   font-weight: 600;
   color: white;
   background: linear-gradient(135deg, #2F8887, #3EA7A3);
-  border: 2px solid rgba(255, 255, 255, 0.8); /* sharper, brighter border */
+  background-color: #2F8887;
+  border: 2px solid rgba(255, 255, 255, 0.8);
   border-radius: 20px;
   cursor: pointer;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.7); /* stronger white glow */
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   width: 100%;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.button.disabled {
+  background-color: #888;
+  background-image: none;
+  color: #ccc;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
+.button.disabled:hover,
+.button.disabled:active,
+.button.disabled:focus {
+  background-color: #888;
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: none;
 }
 
 .button:hover {
@@ -179,24 +199,6 @@ body {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
-.radioInput input[type="radio"] {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  background-color: transparent;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  position: relative;
-}
-
-.radioInput input[type="radio"]:checked {
-  background-color: #3EA7A3;
-  border-color: white;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
-}
-
 .radioInput label {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-size: 1.3rem;
@@ -204,4 +206,12 @@ body {
   color: white;
   cursor: pointer;
   flex: 1;
+}
+
+.progressBar {
+  height: 8px;
+  background-color: #51b9b8;
+  position: relative;
+  left: 0px;
+  transition: width 0.3s ease;
 }
