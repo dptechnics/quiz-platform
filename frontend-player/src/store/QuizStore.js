@@ -101,7 +101,12 @@ class QuizStore {
       }
     });
 
-    this.socket.on('newQuestion', msg => {
+    const handleNewQuestion = async (msg) => {
+      /* Send the answer if it's not already sent */
+      if(!this.answerConfirmed && this.quiz.currentQuestion.id > -1) {
+        await this.sendAnswer();
+      }
+
       runInAction(() => {
         this.quiz.setCurrentQuestion(msg);
         this.answerConfirmed = false;
@@ -109,6 +114,10 @@ class QuizStore {
         this.elapsedTime = 0;
         this.setAnswer(this.quiz.currentQuestion.type === "multiplechoice" ? -1 : 0);
       });
+    }
+
+    this.socket.on('newQuestion', (msg) => {
+      handleNewQuestion(msg);
     });
 
     this.socket.on('questionTick', msg => {
@@ -123,19 +132,7 @@ class QuizStore {
       });
     });
 
-    this.socket.on('answerQuestion', msg => {
-      console.log(msg);
-      if(msg.result) {
-        runInAction(() => {
-          this.answerConfirmed = true;
-        });
-      } else {
-        //TODO
-      }
-    });
-
-    this.socket.on('questionsFinished', msg => {
-      console.log(msg);
+    this.socket.on('questionsFinished', () => {
       runInAction(() => {
         this.quizIsFinished = true;
       });
@@ -197,13 +194,24 @@ class QuizStore {
     if (!this.socket) {
       return;
     }
+    try {
+      const resp = await this.socket.emitWithAck('answerQuestion', {
+        id: this.player.id,
+        question: this.currentAnswerQuestion,
+        token: this.player.token,
+        answer: this.currentAnswer
+      });
 
-    this.socket.emit('answerQuestion', {
-      id: this.player.id,
-      question: this.currentAnswerQuestion,
-      token: this.player.token,
-      answer: this.currentAnswer
-    });
+      if(resp.result) {
+        runInAction(() => {
+          this.answerConfirmed = true;
+        });
+      } else {
+        //TODO
+      }
+    } catch {
+      //TODO
+    }
   };
 }
 

@@ -9,9 +9,11 @@ class QuizStore {
   elapsedTime = 0;
   totalTime = 0;
   quizIsFinished = false;
+  ranking = new Array();
 
   constructor() {
     this.quiz = new Quiz();
+    this.ranking = new Array();
     makeAutoObservable(this);
   };
 
@@ -68,6 +70,7 @@ class QuizStore {
     this.socket.on('resetQuiz', () => {
       runInAction(() => {
         this.quiz = new Quiz();
+        this.ranking = new Array();
         this.elapsedTime = 0;
         this.totalTime = 0;
         this.quizIsFinished = false;
@@ -95,9 +98,20 @@ class QuizStore {
     });
 
     this.socket.on('questionsFinished', msg => {
-      console.log(msg);
       runInAction(() => {
         this.quizIsFinished = true;
+      });
+    });
+
+    this.socket.on('ranking', msg => {
+      runInAction(() => {
+        this.ranking = new Array();
+
+        if(Array.isArray(msg)) {
+          for(var i = 0; i < 3 && i < msg.length; ++i) {
+            this.ranking.push(msg[i]);
+          }
+        }
       });
     });
   };
@@ -134,6 +148,17 @@ class QuizStore {
     }
 
     this.socket.emit('quizNextQuestion', {});
+  };
+
+  /**
+   * Rank the players
+   */
+  rankPlayers = () => {
+    if (!this.socket) {
+      return;
+    }
+
+    this.socket.emit('getRanking', {});
   };
 }
 

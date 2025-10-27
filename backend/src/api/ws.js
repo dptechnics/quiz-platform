@@ -54,6 +54,10 @@ export class WsApi {
     });
   };
 
+  emitRanking = (ranking) => {
+    this.io.emit('ranking', ranking);
+  };
+
   defineRoutes = () => {
     this.io.on("connection", (socket) => {
 
@@ -86,14 +90,14 @@ export class WsApi {
       });
 
       /* Post an answer to a question */
-      socket.on('answerQuestion', async msg => {
+      socket.on('answerQuestion', async (msg, callback) => {
         const id = msg.id;
         const question = msg.question;
         const token = msg.token;
         const answer = msg.answer;
 
         if (id == undefined || token == undefined || answer == undefined) {
-          socket.emit("answerQuestion", {
+          callback({
             result: false,
             msg: `Missing id, token or answer in message`
           });
@@ -104,7 +108,7 @@ export class WsApi {
           return player.id == id && player.token == token && player.websocket.id == socket.id
         });
         if (p == undefined) {
-          socket.emit("answerQuestion", {
+          callback({
             result: false,
             msg: `Player id or token is invalid or socket session was hijacked`
           });
@@ -113,14 +117,14 @@ export class WsApi {
 
         const player = await this.gameController.processAnswer(id, token, question, answer);
         if (player == undefined) {
-          socket.emit("answerQuestion", {
+          callback({
             result: false,
             msg: `Player id or token is invalid`
           });
           return;
         }
 
-        socket.emit("answerQuestion", {
+        callback({
           result: true,
           msg: player.toJS()
         });
@@ -139,6 +143,10 @@ export class WsApi {
         });
       });
 
+      /* Get the player ranking */
+      socket.on('getRanking', () => {
+        this.gameController.rankPlayers();
+      });
     });
   };
 }

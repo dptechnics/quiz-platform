@@ -198,7 +198,6 @@ body {
   cursor: pointer;
   transition: all 0.25s ease;
   font-size: 2rem;
-  justify-content: center;
 }
 
 .radioInput:hover {

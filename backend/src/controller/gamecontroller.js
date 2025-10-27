@@ -47,99 +47,6 @@ export class GameController {
     }
   };
 
-  // /**
-  //  * Finish the current question. This will end the timewindow of the question so that the answers 
-  //  * can be collec
-  //  * 
-  //  * @return {Question} A POJO object containing the question, answers and answer statistics or
-  //  * undefined when there was no question found.
-  //  */
-  // finishQuestion = async () => {
-  //   console.log(`Finishing question ${this.currentQuestion}`);
-
-  //   if (this.questionTimeout != undefined) {
-  //     clearTimeout(this.questionTimeout);
-  //     this.questionTimeout = undefined;
-  //   }
-
-  //   if (this.quiz.currentQuestion < 0 || this.quiz.currentQuestion >= this.quiz.questions.length) {
-  //     return undefined;
-  //   }
-
-  //   const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
-  //   if (question == undefined) {
-  //     return undefined;
-  //   }
-
-  //   const answerValue = await question.getAnswer();
-
-  //   question.stats.reset();
-
-  //   this.quiz.players.forEach(player => {
-  //     question.stats.totalPlayers += 1;
-
-  //     const answer = player.answers.find(answer => answer.question == this.quiz.currentQuestion);
-  //     if (answer == undefined) {
-  //       player.answers.push(new Answer(this.quiz.currentQuestion, question.type, -1, false, false));
-  //       question.stats.unanswered += 1;
-  //     } else {
-  //       question.stats.answered += 1;
-
-  //       switch (question.type) {
-  //         case Question.TYPE.MULTIPLECHOICE:
-  //           if (answer.result) {
-  //             question.stats.correct += 1;
-  //           } else {
-  //             question.stats.wrong += 1;
-  //           }
-  //           break;
-
-  //         case Question.TYPE.VALUE:
-  //           question.stats.average += answer.answer;
-
-  //           if (answerValue != undefined) {
-  //             const diff = Math.abs(answer.answer - answerValue);
-
-  //             if (question.stats.worstAnswer == undefined) {
-  //               question.stats.worstAnswer = answer.answer;
-  //             } else {
-  //               const worstDiff = Math.abs(question.stats.worstAnswer - answerValue);
-  //               if (diff > worstDiff) {
-  //                 question.stats.worstAnswer = answer.answer;
-  //                 question.stats.worstDiff = answer.diff;
-  //               }
-  //             }
-
-  //             if (question.stats.bestAnswer == undefined) {
-  //               question.stats.bestAnswer = answer.answer;
-  //             } else {
-  //               const bestDiff = Math.abs(question.stats.bestAnswer - answerValue);
-  //               if (diff < bestDiff) {
-  //                 question.stats.bestAnswer = answer.answer;
-  //                 question.stats.bestDiff = diff;
-  //               }
-  //             }
-  //           }
-  //           break;
-  //       }
-  //     }
-  //   });
-
-  //   if (question.stats.answered > 0) {
-  //     question.stats.average = parseInt(question.stats.average / question.stats.answered);
-  //   }
-
-  //   const res = question.toJS(true, true);
-  //   WsApi.get().emitFinishedQuestion(res);
-
-  //   /* Check if the quiz has finished */
-  //   if(this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
-  //     console.log('All questions are finished, the full quiz is now finished');
-  //     WsApi.get().emitQuestionsFinished();
-  //   }
-  //   return res;
-  // };
-
   /**
    * Go to the next question. If the quiz has not yet started this function will start the quiz. If 
    * the quiz has ended this function is a no-op.
@@ -155,6 +62,7 @@ export class GameController {
 
     if (this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
       console.log('There is no next question, the quiz is finished');
+      this.quiz.currentQuestion += 1;
       WsApi.get().emitQuestionsFinished();
       return {
         status: "The quiz has finished"
@@ -324,13 +232,67 @@ export class GameController {
     });
 
     for (const question of this.quiz.questions) {
-      /* Only rank questions that are already answered */
-      if (question.id > this.quiz.currentQuestion) {
-        continue;
-      } else if (question.id == this.quiz.currentQuestion) {
+      /* Only rank questions that are already asked */
+      if (question.id >= this.quiz.currentQuestion) {
+        console.log(`Skipping question ${question.id} for ranking as it is not already answered`);
         continue;
       }
 
+      /* Calculate the statistics for the questions */
+      const answerValue = await question.getAnswer();
+      question.stats.reset();
+
+      this.quiz.players.forEach(player => {
+        question.stats.totalPlayers += 1;
+
+        const answer = player.answers.find(answer => answer.question == this.quiz.currentQuestion);
+        if (answer == undefined) {
+          //player.answers.push(new Answer(this.quiz.currentQuestion, question.type, -1, false, false));
+          question.stats.unanswered += 1;
+        } else {
+          question.stats.answered += 1;
+
+          switch (question.type) {
+            case Question.TYPE.MULTIPLECHOICE:
+              if (answer.result) {
+                question.stats.correct += 1;
+              } else {
+                question.stats.wrong += 1;
+              }
+              break;
+
+            case Question.TYPE.VALUE:
+              question.stats.average += answer.answer;
+
+              if (answerValue != undefined) {
+                const diff = Math.abs(answer.answer - answerValue);
+
+                if (question.stats.worstAnswer == undefined) {
+                  question.stats.worstAnswer = answer.answer;
+                } else {
+                  const worstDiff = Math.abs(question.stats.worstAnswer - answerValue);
+                  if (diff > worstDiff) {
+                    question.stats.worstAnswer = answer.answer;
+                    question.stats.worstDiff = answer.diff;
+                  }
+                }
+
+                if (question.stats.bestAnswer == undefined) {
+                  question.stats.bestAnswer = answer.answer;
+                } else {
+                  const bestDiff = Math.abs(question.stats.bestAnswer - answerValue);
+                  if (diff < bestDiff) {
+                    question.stats.bestAnswer = answer.answer;
+                    question.stats.bestDiff = diff;
+                  }
+                }
+              }
+              break;
+          }
+        }
+      });
+
+      /* Perform ranking of the question for each player */
       for (const player of this.quiz.players) {
         const answer = player.answers.find(answer => answer.question == question.id);
         if (answer != undefined) {
@@ -356,7 +318,9 @@ export class GameController {
     switch (this.quiz.rankingMechanism) {
       case Quiz.RANKING_MECHANISM.MULTIPLECHOICE_FIRST_VALUE_SECOND:
       default:
-        return this.rankPlayersMultiplechoiceFirstValueSecond();
+        const ranking = await this.rankPlayersMultiplechoiceFirstValueSecond();
+        WsApi.get().emitRanking(ranking);
+        return ranking;
     }
   };
 }
