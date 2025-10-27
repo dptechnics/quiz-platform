@@ -58,6 +58,18 @@ class QuizStore {
       console.log('Lost connection to the quiz server');
     });
 
+    this.socket.on('resetQuiz', () => {
+      runInAction(() => {
+        this.quiz = new Quiz();
+        this.elapsedTime = 0;
+        this.totalTime = 0;
+        this.quizIsFinished = false;
+      });
+
+      this.getQuiz();
+      this.connect();
+    });
+
     this.socket.on('newQuestion', msg => {
       runInAction(() => {
         this.quizIsFinished = false;
