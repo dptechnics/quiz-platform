@@ -10,7 +10,6 @@ const App = observer(() => {
   useEffect(() => {
     quizStore.getQuiz();
     quizStore.connect();
-
   }, []);
 
   return (

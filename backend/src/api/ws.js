@@ -45,16 +45,13 @@ export class WsApi {
     this.io.emit('newQuestion', question);
   };
 
-  emitQuestionTick = (questionId, elapsedTime, totalTime) => {
+  emitQuestionTick = (questionId, elapsedTime, totalTime, finished) => {
     this.io.emit('questionTick', {
       "q": questionId,
       "e": elapsedTime,
-      "t": totalTime
+      "t": totalTime,
+      "f": finished
     });
-  };
-
-  emitFinishedQuestion = (question) => {
-    this.io.emit('finishedQuestion', question);
   };
 
   defineRoutes = () => {
@@ -91,6 +88,7 @@ export class WsApi {
       /* Post an answer to a question */
       socket.on('answerQuestion', async msg => {
         const id = msg.id;
+        const question = msg.question;
         const token = msg.token;
         const answer = msg.answer;
 
@@ -113,7 +111,7 @@ export class WsApi {
           return;
         }
 
-        const player = await this.gameController.processAnswer(id, token, answer);
+        const player = await this.gameController.processAnswer(id, token, question, answer);
         if (player == undefined) {
           socket.emit("answerQuestion", {
             result: false,
@@ -131,11 +129,6 @@ export class WsApi {
       /* Go to the next question */
       socket.on('quizNextQuestion', () => {
         this.gameController.nextQuestion();
-      });
-
-      /* Finish the current question */
-      socket.on('quizFinishQuestion', () => {
-        this.gameController.finishQuestion();
       });
 
       /* Reset the quiz */

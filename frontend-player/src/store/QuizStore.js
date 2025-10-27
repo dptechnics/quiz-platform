@@ -9,6 +9,7 @@ class QuizStore {
   registered = false;
   quiz = null;
   player = null;
+  currentAnswerQuestion = undefined;
   currentAnswer = undefined;
   elapsedTime = 0;
   totalTime = 0;
@@ -34,10 +35,10 @@ class QuizStore {
   };
 
   /**
-   * This value is true when the user can still answer the current question.
+   * The number of seconds left on this question.
    */
-  get canAnswer() {
-    return this.percentRemaining > 0;
+  get timeLeft() {
+    return this.totalTime - this.elapsedTime;
   };
 
   /**
@@ -74,6 +75,22 @@ class QuizStore {
       console.log('Lost connection to the quiz server');
     });
 
+    this.socket.on('resetQuiz', () => {
+      runInAction(() => {
+        this.quiz = new Quiz();
+        this.player = new Player();
+        this.registered = false;
+        this.currentAnswer = undefined;
+        this.elapsedTime = 0;
+        this.totalTime = 0;
+        this.answerConfirmed = false;
+        this.quizIsFinished = false;
+      });
+
+      this.getQuiz();
+      this.connect();
+    });
+
     this.socket.on('registerPlayer', msg => {
       if (msg.result) {
         this.player.setPlayerData(msg.msg);
@@ -94,14 +111,12 @@ class QuizStore {
       });
     });
 
-    this.socket.on('finishedQuestion', msg => {
-      runInAction(() => {
-        this.totalTime = 0;
-        this.elapsedTime = 0;
-      });
-    });
-
     this.socket.on('questionTick', msg => {
+      if(msg.f) {
+        /* The question is now finished, time to send the answer */
+        this.sendAnswer();
+      }
+
       runInAction(() => {
         this.elapsedTime = msg.e;
         this.totalTime = msg.t;
@@ -166,6 +181,12 @@ class QuizStore {
    * @param {Number} answer The currently selected answer.
    */
   setAnswer = (answer) => {
+    if(this.timeLeft <= 0) {
+      console.log('Not setting answer because the time is up');
+      return;
+    }
+
+    this.currentAnswerQuestion = this.quiz.currentQuestion.id;
     this.currentAnswer = answer;
   };
 
@@ -177,12 +198,9 @@ class QuizStore {
       return;
     }
 
-    if (!this.canAnswer) {
-      return;
-    }
-
     this.socket.emit('answerQuestion', {
       id: this.player.id,
+      question: this.currentAnswerQuestion,
       token: this.player.token,
       answer: this.currentAnswer
     });

@@ -7,7 +7,7 @@ import { WsApi } from "../api/ws.js";
 export class GameController {
   constructor(quizData) {
     this.quiz = new Quiz(quizData);
-    this.answerTimeout = undefined;
+    this.questionTimeout = undefined;
     this.passedTime = 0;
   };
 
@@ -39,7 +39,6 @@ export class GameController {
       rankingMechanism: this.quiz.rankingMechanism.description,
       previousQuestion: prevQuestion,
       currentQuestion: curQuestion,
-      openToAnswers: this.quiz.openToAnswers,
       stats: {
         prizes: this.quiz.prizes.length,
         players: this.quiz.players.length,
@@ -48,99 +47,98 @@ export class GameController {
     }
   };
 
-  /**
-   * Finish the current question. If a player has not answered the current question this question
-   * will be marked as unanswered for this player.
-   * 
-   * @return {Question} A POJO object containing the question, answers and answer statistics or
-   * undefined when there was no question found.
-   */
-  finishQuestion = async () => {
-    console.log(`Finishing question ${this.currentQuestion}`);
-    this.quiz.openToAnswers = false;
+  // /**
+  //  * Finish the current question. This will end the timewindow of the question so that the answers 
+  //  * can be collec
+  //  * 
+  //  * @return {Question} A POJO object containing the question, answers and answer statistics or
+  //  * undefined when there was no question found.
+  //  */
+  // finishQuestion = async () => {
+  //   console.log(`Finishing question ${this.currentQuestion}`);
 
-    if (this.answerTimeout != undefined) {
-      clearTimeout(this.answerTimeout);
-      this.answerTimeout = undefined;
-    }
+  //   if (this.questionTimeout != undefined) {
+  //     clearTimeout(this.questionTimeout);
+  //     this.questionTimeout = undefined;
+  //   }
 
-    if (this.quiz.currentQuestion < 0 || this.quiz.currentQuestion >= this.quiz.questions.length) {
-      return undefined;
-    }
+  //   if (this.quiz.currentQuestion < 0 || this.quiz.currentQuestion >= this.quiz.questions.length) {
+  //     return undefined;
+  //   }
 
-    const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
-    if (question == undefined) {
-      return undefined;
-    }
+  //   const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
+  //   if (question == undefined) {
+  //     return undefined;
+  //   }
 
-    const answerValue = await question.getAnswer();
+  //   const answerValue = await question.getAnswer();
 
-    question.stats.reset();
+  //   question.stats.reset();
 
-    this.quiz.players.forEach(player => {
-      question.stats.totalPlayers += 1;
+  //   this.quiz.players.forEach(player => {
+  //     question.stats.totalPlayers += 1;
 
-      const answer = player.answers.find(answer => answer.question == this.quiz.currentQuestion);
-      if (answer == undefined) {
-        player.answers.push(new Answer(this.quiz.currentQuestion, question.type, -1, false, false));
-        question.stats.unanswered += 1;
-      } else {
-        question.stats.answered += 1;
+  //     const answer = player.answers.find(answer => answer.question == this.quiz.currentQuestion);
+  //     if (answer == undefined) {
+  //       player.answers.push(new Answer(this.quiz.currentQuestion, question.type, -1, false, false));
+  //       question.stats.unanswered += 1;
+  //     } else {
+  //       question.stats.answered += 1;
 
-        switch (question.type) {
-          case Question.TYPE.MULTIPLECHOICE:
-            if (answer.result) {
-              question.stats.correct += 1;
-            } else {
-              question.stats.wrong += 1;
-            }
-            break;
+  //       switch (question.type) {
+  //         case Question.TYPE.MULTIPLECHOICE:
+  //           if (answer.result) {
+  //             question.stats.correct += 1;
+  //           } else {
+  //             question.stats.wrong += 1;
+  //           }
+  //           break;
 
-          case Question.TYPE.VALUE:
-            question.stats.average += answer.answer;
+  //         case Question.TYPE.VALUE:
+  //           question.stats.average += answer.answer;
 
-            if (answerValue != undefined) {
-              const diff = Math.abs(answer.answer - answerValue);
+  //           if (answerValue != undefined) {
+  //             const diff = Math.abs(answer.answer - answerValue);
 
-              if (question.stats.worstAnswer == undefined) {
-                question.stats.worstAnswer = answer.answer;
-              } else {
-                const worstDiff = Math.abs(question.stats.worstAnswer - answerValue);
-                if (diff > worstDiff) {
-                  question.stats.worstAnswer = answer.answer;
-                  question.stats.worstDiff = answer.diff;
-                }
-              }
+  //             if (question.stats.worstAnswer == undefined) {
+  //               question.stats.worstAnswer = answer.answer;
+  //             } else {
+  //               const worstDiff = Math.abs(question.stats.worstAnswer - answerValue);
+  //               if (diff > worstDiff) {
+  //                 question.stats.worstAnswer = answer.answer;
+  //                 question.stats.worstDiff = answer.diff;
+  //               }
+  //             }
 
-              if (question.stats.bestAnswer == undefined) {
-                question.stats.bestAnswer = answer.answer;
-              } else {
-                const bestDiff = Math.abs(question.stats.bestAnswer - answerValue);
-                if (diff < bestDiff) {
-                  question.stats.bestAnswer = answer.answer;
-                  question.stats.bestDiff = diff;
-                }
-              }
-            }
-            break;
-        }
-      }
-    });
+  //             if (question.stats.bestAnswer == undefined) {
+  //               question.stats.bestAnswer = answer.answer;
+  //             } else {
+  //               const bestDiff = Math.abs(question.stats.bestAnswer - answerValue);
+  //               if (diff < bestDiff) {
+  //                 question.stats.bestAnswer = answer.answer;
+  //                 question.stats.bestDiff = diff;
+  //               }
+  //             }
+  //           }
+  //           break;
+  //       }
+  //     }
+  //   });
 
-    if (question.stats.answered > 0) {
-      question.stats.average = parseInt(question.stats.average / question.stats.answered);
-    }
+  //   if (question.stats.answered > 0) {
+  //     question.stats.average = parseInt(question.stats.average / question.stats.answered);
+  //   }
 
-    const res = question.toJS(true, true);
-    WsApi.get().emitFinishedQuestion(res);
+  //   const res = question.toJS(true, true);
+  //   WsApi.get().emitFinishedQuestion(res);
 
-    /* Check if the quiz has finished */
-    if(this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
-      console.log('All questions are finished, the full quiz is now finished');
-      WsApi.get().emitQuestionsFinished();
-    }
-    return res;
-  };
+  //   /* Check if the quiz has finished */
+  //   if(this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
+  //     console.log('All questions are finished, the full quiz is now finished');
+  //     WsApi.get().emitQuestionsFinished();
+  //   }
+  //   return res;
+  // };
 
   /**
    * Go to the next question. If the quiz has not yet started this function will start the quiz. If 
@@ -149,27 +147,22 @@ export class GameController {
    * @return {Question} The question to which the quiz has advanced.
    */
   nextQuestion = async () => {
+    /* Clear the timeout of the current question */
+    if (this.questionTimeout != undefined) {
+      clearTimeout(this.questionTimeout);
+      this.questionTimeout = undefined;
+    }
+
     if (this.quiz.currentQuestion + 1 >= this.quiz.questions.length) {
-      console.log('The quiz is finished, there is no next question');
+      console.log('There is no next question, the quiz is finished');
+      WsApi.get().emitQuestionsFinished();
       return {
         status: "The quiz has finished"
       };
     }
 
-    /* Finish the current question before going to the next one */
-    if (this.quiz.openToAnswers) {
-      await this.finishQuestion();
-    }
-
+    /* Increase the id of the current question and search the object */
     this.quiz.currentQuestion += 1;
-
-    this.quiz.openToAnswers = true;
-
-    if (this.answerTimeout != undefined) {
-      clearTimeout(this.answerTimeout);
-      this.answerTimeout = undefined;
-    }
-
     const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
     if (question == undefined) {
       console.warn('The next question is undefined, cannot start timer');
@@ -178,22 +171,21 @@ export class GameController {
       };
     }
 
+    /* Start a timer if this is a timed question */
     if (question.time > 0) {
       this.passedTime = 0;
 
       const handleQuestionTimerTick = () => {
-        if(this.passedTime >= question.time) {
-          console.info(`Automatically finished question ${question.id} after ${question.time}s`);
-          this.finishQuestion();
-          return;
-        }
-
         this.passedTime += 1;
-        WsApi.get().emitQuestionTick(question.id, this.passedTime, question.time);
-        this.answerTimeout = setTimeout(handleQuestionTimerTick, 1000);
+        const finished = this.passedTime >= question.time;
+        WsApi.get().emitQuestionTick( question.id, this.passedTime, question.time, finished);
+
+        if(!finished) {
+          this.questionTimeout = setTimeout(handleQuestionTimerTick, 1000);
+        }
       };
 
-      this.answerTimeout = setTimeout(handleQuestionTimerTick, 1000);
+      this.questionTimeout = setTimeout(handleQuestionTimerTick, 1000);
     }
 
     const res = question.toJS();
@@ -205,16 +197,23 @@ export class GameController {
    * Go to the start of the quiz and reset the answers of all players.
    */
   resetQuiz = () => {
+    if(this.questionTimeout) {
+      clearTimeout(this.questionTimeout);
+      this.questionTimeout = undefined;
+    }
+
     this.quiz.currentQuestion = -1;
 
     this.quiz.players.forEach(player => {
       player.resetAnswers();
     });
+    this.quiz.players = new Array();
 
     this.quiz.questions.forEach(question => {
       question.stats.reset();
     });
 
+    console.log('The quiz has been reset');
     WsApi.get().emitResetQuiz();
   };
 
@@ -223,23 +222,14 @@ export class GameController {
    * 
    * @param {String} id The id of the player that gave the answer.
    * @param {String} token The security token which authenticates the player.
+   * @param {Number} questionId The id of the question that is answered.
    * @param {Number} answer The answer to the question.
    * 
    * @return The player or undefined when the player wasn't found.
    */
-  processAnswer = async (id, token, answer) => {
+  processAnswer = async (id, token, questionId, answer) => {
     if (this.quiz.currentQuestion < 0) {
       console.warn('Could not process answer because the quiz has not yet started');
-      return undefined;
-    }
-
-    if (this.quiz.currentQuestion > this.quiz.questions.length) {
-      console.warn('Could not process answer because the quiz has ended');
-      return undefined;
-    }
-
-    if (this.quiz.openToAnswers == false) {
-      console.warn('Could not process answer because the answer window has expired');
       return undefined;
     }
 
@@ -250,26 +240,26 @@ export class GameController {
     }
 
     if (player.token != token) {
-      console.warn(`Player ${player.id}:${player.name} could not answer due to wrong token`);
+      console.warn(`Player ${player.name} could not answer due to wrong token`);
       return undefined;
     }
 
-    if (player.answers.find(answer => answer.question == this.quiz.currentQuestion) != undefined) {
-      console.warn(`Player ${player.id}:${player.name} already answered the current question`);
+    if (player.answers.find(answer => answer.question == questionId) != undefined) {
+      console.warn(`Player ${player.name} already answered question ${questionId}`);
       return undefined;
     }
 
-    const question = this.quiz.questions.find(question => question.id == this.quiz.currentQuestion);
+    const question = this.quiz.questions.find(question => question.id == questionId);
     if (question == undefined) {
-      console.warn('Cannot process answer for unknown question');
+      console.warn(`Cannot process answer for unknown question ${questionId}`);
       return undefined;
     }
 
     const result = await question.getResult(answer);
 
-    player.answers.push(new Answer(this.quiz.currentQuestion, question.type, answer, result, true));
-    console.info(`Player ${player.id}:${player.name} answered ${answer} to question ` +
-      `${this.quiz.currentQuestion} with result ${result}`);
+    player.answers.push(new Answer(questionId, question.type, answer, result, true));
+    console.info(`Player ${player.name} answered ${answer} to question ` +
+      `${questionId} with result ${result}`);
 
     return player;
   };
@@ -337,7 +327,7 @@ export class GameController {
       /* Only rank questions that are already answered */
       if (question.id > this.quiz.currentQuestion) {
         continue;
-      } else if (question.id == this.quiz.currentQuestion && this.quiz.openToAnswers) {
+      } else if (question.id == this.quiz.currentQuestion) {
         continue;
       }
 

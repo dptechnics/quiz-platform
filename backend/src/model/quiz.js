@@ -17,9 +17,7 @@ export class Quiz {
     this.prizes = data.prizes || [];
     this.questions = data.questions?.map((question, idx) => new Question(idx, question));
     this.players = new Array();
-
     this.currentQuestion = -1;
-    this.openToAnswers = false;
   };
 
   /**

@@ -17,16 +17,6 @@ export class HttpApi {
     res.send(this.gameController.getQuiz());
   };
 
-  postFinishQuestion = async (req, res) => {
-    const question = await this.gameController.finishQuestion();
-    if (question == undefined) {
-      res.status(409).send({ error: 'no active question found' });
-      return;
-    }
-
-    res.status(200).send(question);
-  };
-
   postNextQuestion = async (req, res) => {
     res.send(await this.gameController.nextQuestion());
   };
@@ -91,7 +81,6 @@ export class HttpApi {
     app.get('/api/quiz', this.getQuiz);
     app.get('/api/quiz/prizes', this.getPrizes);
     app.get('/api/quiz/questions', this.getQuestions);
-    app.post('/api/quiz/question/finish', this.postFinishQuestion);
     app.post('/api/quiz/question/next', this.postNextQuestion);
     app.post('/api/quiz/reset', this.postResetQuestion);
 

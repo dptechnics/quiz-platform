@@ -28,6 +28,13 @@ class QuizStore {
   };
 
   /**
+   * The number of seconds left on this question.
+   */
+  get timeLeft() {
+    return this.totalTime - this.elapsedTime;
+  };
+
+  /**
    * This value is true when the user can still answer the current question.
    */
   get canAnswer() {
@@ -58,14 +65,16 @@ class QuizStore {
       console.log('Lost connection to the quiz server');
     });
 
-    this.socket.on('registerPlayer', msg => {
-      if (msg.result) {
-        this.player.setPlayerData(msg.msg);
-        this.setRegistered(true);
-        console.log(`Registered with quiz backend as ${this.player.name}`);
-      } else {
-        //TODO
-      }
+    this.socket.on('resetQuiz', () => {
+      runInAction(() => {
+        this.quiz = new Quiz();
+        this.elapsedTime = 0;
+        this.totalTime = 0;
+        this.quizIsFinished = false;
+      });
+      
+      this.getQuiz();
+      this.connect();
     });
 
     this.socket.on('newQuestion', msg => {
@@ -74,16 +83,8 @@ class QuizStore {
         this.quiz.setCurrentQuestion(msg);
         this.totalTime = msg.time;
         this.elapsedTime = 0;
-        this.setAnswer(this.quiz.currentQuestion.type === "multiplechoice" ? -1 : 0);
       });
-      
-    });
 
-    this.socket.on('finishedQuestion', msg => {
-      runInAction(() => {
-        this.totalTime = 0;
-        this.elapsedTime = 0;
-      });
     });
 
     this.socket.on('questionTick', msg => {
@@ -91,11 +92,6 @@ class QuizStore {
         this.elapsedTime = msg.e;
         this.totalTime = msg.t;
       });
-    });
-
-    this.socket.on('answerQuestion', msg => {
-      console.log(msg);
-      //TODO
     });
 
     this.socket.on('questionsFinished', msg => {
@@ -138,17 +134,6 @@ class QuizStore {
     }
 
     this.socket.emit('quizNextQuestion', {});
-  };
-
-  /**
-   * Finish the current question.
-   */
-  finishQuestion = () => {
-    if (!this.socket) {
-      return;
-    }
-
-    this.socket.emit('quizFinishQuestion', {});
   };
 }
 

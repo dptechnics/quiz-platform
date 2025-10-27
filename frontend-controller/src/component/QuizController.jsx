@@ -1,15 +1,15 @@
 import { observer } from "mobx-react-lite";
 import { quizStore } from "../store/QuizStore";
-import { IconPlayerStopFilled, IconPlayerPlayFilled, IconPlayerTrackPrevFilled } from '@tabler/icons-react';
+import { IconPlayerPlayFilled, IconRefresh } from '@tabler/icons-react';
 
 /**
  * Handle a press on the restart button.
  */
 const handleRestartQuiz = () => {
   const confirmed = window.confirm("Are you sure you want to restart the quiz?");
-    if (confirmed) {
-      quizStore.restartQuiz();
-    }
+  if (confirmed) {
+    quizStore.restartQuiz();
+  }
 };
 
 export const QuizController = observer(() => (
@@ -33,15 +33,21 @@ export const QuizController = observer(() => (
           }
         </div>
       </div>
+      {(quizStore.quiz.currentQuestion.id >= 0 && !quizStore.quizIsFinished) &&
+        <div className={`timerDisplay ${quizStore.timeLeft <= 0 ? "timesUp" : ""}`}>
+          {quizStore.timeLeft > 0 ? (
+            <p>⏳ Time left: {quizStore.timeLeft}s</p>
+          ) : (
+            <p>⏰ Time's up!</p>
+          )}
+        </div>
+      }
       <div className="controlButtons">
         <button className="button" onClick={() => handleRestartQuiz()}>
-          <IconPlayerTrackPrevFilled size={25} stroke={2} />
-        </button>
-        <button className={`button ${quizStore.canAnswer ? '' : 'disabled'}`} onClick={() => quizStore.finishQuestion()}>
-          <IconPlayerStopFilled size={25} stroke={2} />
+          <IconRefresh size={25} stroke={2} /><br /> Restart
         </button>
         <button className={`button ${quizStore.quizIsFinished ? 'disabled' : ''}`} onClick={() => quizStore.nextQuestion()}>
-          <IconPlayerPlayFilled size={25} stroke={2} />
+          <IconPlayerPlayFilled size={25} stroke={2} /><br /> Next question
         </button>
       </div>
     </div>

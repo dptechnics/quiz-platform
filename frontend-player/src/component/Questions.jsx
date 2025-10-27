@@ -22,6 +22,7 @@ export const Questions = observer(() => (
                         value={idx}
                         checked={quizStore.currentAnswer === idx}
                         onChange={() => quizStore.setAnswer(idx)}
+                        disabled={quizStore.timeLeft <= 0}
                       />
                       {choice}
                     </label>
@@ -31,33 +32,20 @@ export const Questions = observer(() => (
             }
             {
               quizStore.quiz.currentQuestion.type == "value" &&
-              <input className="textInput" type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} />
+              <input className="textInput" type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} disabled={quizStore.timeLeft <= 0}/>
             }
           </>
         }
       </div>
     </div>
     {(quizStore.quiz.currentQuestion.id >= 0 && !quizStore.quizIsFinished) &&
-      <button className={`button ${quizStore.canAnswer && !quizStore.answerConfirmed > 0 ? '' : 'disabled'}`} onClick={() => quizStore.sendAnswer()}>
-        {
-          !quizStore.answerConfirmed &&
-          <>
-            {
-              quizStore.canAnswer && <>Send answer</>
-            }
-            {
-              !quizStore.canAnswer && <>Time's up</>
-            }
-          </>
-        }
-        {
-          quizStore.answerConfirmed &&
-          <>
-            Thank you
-          </>
-        }
-
-      </button>
+      <div className={`timerDisplay ${quizStore.timeLeft <= 0 ? "timesUp" : ""}`}>
+          {quizStore.timeLeft > 0 ? (
+            <p>⏳ Time left: {quizStore.timeLeft}s</p>
+          ) : (
+            <p>⏰ Time's up!</p>
+          )}
+        </div>
     }
   </div>
 ));
