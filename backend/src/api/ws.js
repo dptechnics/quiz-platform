@@ -45,12 +45,13 @@ export class WsApi {
     this.io.emit('newQuestion', question);
   };
 
-  emitQuestionTick = (questionId, elapsedTime, totalTime, finished) => {
+  emitQuestionTick = (questionId, elapsedTime, totalTime, finished, answer) => {
     this.io.emit('questionTick', {
       "q": questionId,
       "e": elapsedTime,
       "t": totalTime,
-      "f": finished
+      "f": finished,
+      "a": answer
     });
   };
 

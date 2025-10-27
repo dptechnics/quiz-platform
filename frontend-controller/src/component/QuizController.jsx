@@ -41,12 +41,16 @@ export const QuizController = observer(() => (
             quizStore.quiz.currentQuestion.type === "multiplechoice" && (
               <>
                 {quizStore.quiz.currentQuestion.choices.map((choice, idx) => (
-                  <label className="radioInput" key={idx}>
+                  <label className={`radioInput ${((quizStore.timeLeft <= 0) && (idx == quizStore.quiz.currentQuestion.solution.option)) ? 'correct' : ''}`} key={idx}>
                     {choice}
                   </label>
                 ))}
               </>
             )
+          }
+          {
+            (quizStore.quiz.currentQuestion.type == "value" && quizStore.timeLeft <= 0 && !quizStore.quizIsFinished) &&
+              <p>Solution: {quizStore.quiz.currentQuestion.solution.value}</p>
           }
         </div>
       </div>

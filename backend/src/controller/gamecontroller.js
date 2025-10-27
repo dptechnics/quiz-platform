@@ -83,10 +83,16 @@ export class GameController {
     if (question.time > 0) {
       this.passedTime = 0;
 
-      const handleQuestionTimerTick = () => {
+      const handleQuestionTimerTick = async () => {
         this.passedTime += 1;
         const finished = this.passedTime >= question.time;
-        WsApi.get().emitQuestionTick( question.id, this.passedTime, question.time, finished);
+
+        let answer = undefined;
+        if(finished) {
+          answer = await question.getAnswer();
+        }
+
+        WsApi.get().emitQuestionTick(question.id, this.passedTime, question.time, finished, answer);
 
         if(!finished) {
           this.questionTimeout = setTimeout(handleQuestionTimerTick, 1000);

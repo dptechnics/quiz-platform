@@ -87,11 +87,22 @@ class QuizStore {
       runInAction(() => {
         this.elapsedTime = msg.e;
         this.totalTime = msg.t;
+
+        if(msg.f) {
+          if(msg.a) {
+            if(msg.a.option) {
+              this.quiz.currentQuestion.solution.option = msg.a.option;
+            }
+
+            if(msg.a.value) {
+              this.quiz.currentQuestion.solution.value = msg.a.value;
+            }
+          }
+        }
       });
     });
 
     this.socket.on('questionsFinished', msg => {
-      console.log(msg);
       runInAction(() => {
         this.quizIsFinished = true;
       });

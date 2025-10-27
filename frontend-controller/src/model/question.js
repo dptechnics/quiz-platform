@@ -6,6 +6,10 @@ export class Question {
     time = 20;
     type = "";
     choices = [];
+    solution = {
+        option: -1,
+        value: 0
+    };
 
     /**
      * Construct a new question.

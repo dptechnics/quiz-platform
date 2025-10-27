@@ -208,6 +208,19 @@ body {
   flex: 1;
 }
 
+.correct {
+  border: 2px solid #00d67a;
+  background: linear-gradient(135deg, rgba(0, 214, 122, 0.3), rgba(0, 255, 178, 0.2));
+  box-shadow: 0 0 20px rgba(0, 255, 140, 0.6);
+  transform: scale(1.03);
+  transition: all 0.3s ease;
+}
+
+.correct:hover {
+  box-shadow: 0 0 18px rgba(5, 180, 0, 0.8);
+  border-color: rgba(5, 180, 0, 1);
+}
+
 .progressBar {
   height: 8px;
   background-color: #51b9b8;

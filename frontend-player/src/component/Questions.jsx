@@ -15,7 +15,7 @@ export const Questions = observer(() => (
               quizStore.quiz.currentQuestion.type === "multiplechoice" && (
                 <>
                   {quizStore.quiz.currentQuestion.choices.map((choice, idx) => (
-                    <label className="radioInput" key={idx}>
+                    <label className={`radioInput ${((quizStore.timeLeft <= 0) && (idx == quizStore.quiz.currentQuestion.solution.option)) ? 'correct' : ''}`} key={idx}>
                       <input
                         type="radio"
                         name="answers"
@@ -32,7 +32,13 @@ export const Questions = observer(() => (
             }
             {
               quizStore.quiz.currentQuestion.type == "value" &&
-              <input className="textInput" type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} disabled={quizStore.timeLeft <= 0}/>
+              <>
+                <input className="textInput" type="number" onChange={(e) => quizStore.setAnswer(e.target.value)} disabled={quizStore.timeLeft <= 0} />
+                {
+                  quizStore.timeLeft <= 0 &&
+                  <p>Solution: {quizStore.quiz.currentQuestion.solution.value}</p>
+                }
+              </>
             }
           </>
         }
