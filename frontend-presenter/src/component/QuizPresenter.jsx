@@ -12,7 +12,7 @@ export const QuizPresenter = observer(() => (
             {quizStore.quiz.currentQuestion.id < 0 &&
               <>
                 <p>Scan the QR code to play</p>
-                <QRCodeSVG size="320" fgColor="#FFFFFF" bgColor="#00000000" level="H"  value="https://play.quiz.platform.dptechnics.com" />
+                <QRCodeSVG size="320" fgColor="#FFFFFF" bgColor="#00000000" level="H"  value="https://play.quiz.dptechnics.com" />
               </>
             }
             {quizStore.quiz.currentQuestion.id >= 0 &&
