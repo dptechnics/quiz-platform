@@ -250,6 +250,13 @@ body {
   animation: pulseGlow 1s infinite;
 }
 
+.walterImage {
+  position: absolute;
+  left: 0px;
+  height: 40vh;
+  bottom: 0px;
+}
+
 @keyframes pulseGlow {
   0% {
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);

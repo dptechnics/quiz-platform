@@ -12,7 +12,9 @@ export const QuizPresenter = observer(() => (
             {quizStore.quiz.currentQuestion.id < 0 &&
               <>
                 <p>Scan the QR code to play</p>
-                <QRCodeSVG size="320" fgColor="#FFFFFF" bgColor="#00000000" level="H"  value="https://play.quiz.dptechnics.com" />
+                <QRCodeSVG size="220" fgColor="#FFFFFF" bgColor="#00000000" level="H"  value="https://play.quiz.dptechnics.com" />
+                <p>Win the Walter devkit, Walter Feels <br/>or a Walter module</p>
+                <img src="/walter-half.png" alt="walter" className="walterImage"/>
               </>
             }
             {quizStore.quiz.currentQuestion.id >= 0 &&

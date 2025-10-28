@@ -5,7 +5,7 @@ export const Header = observer(() => (
   <section className="header">
     <h1>{quizStore.quiz.title}</h1>
     <p>
-        Quiz sponsored by DPTechnics
+        DPTechnics - Custom IoT made simple
     </p>
   </section>
 ));
