@@ -6,8 +6,8 @@ export class Question {
    * The supported question types.
    */
   static TYPE = Object.freeze({
-    MULTIPLECHOICE: Symbol('multiplechoice'),
-    VALUE: Symbol('value')
+    MULTIPLECHOICE: 'multiplechoice',
+    VALUE: 'value'
   });
 
   /**
@@ -40,7 +40,7 @@ export class Question {
       return 0;
     }
 
-    const correctAnswer = await this.getAnswer();
+    const correctAnswer = (await this.getAnswer())?.value;
     if(correctAnswer == undefined) {
       return 0;
     }
@@ -75,9 +75,6 @@ export class Question {
           value: await this.datasource.getValue()
         };
     };
-
-    console.warn(`Cannot get answer from question of type: ${this.type.description}`);
-    return undefined;
   };
 
   /**
@@ -95,9 +92,6 @@ export class Question {
         const correct = await this.datasource.getValue();
         return Math.abs(correct - answer);
     };
-
-    console.warn(`Could not calculate result for question of unknown type: ${this.type.description}`);
-    return false;
   };
 
   /**
@@ -110,7 +104,7 @@ export class Question {
     const res = {
       id: this.id,
       question: this.question,
-      type: this.type.description,
+      type: this.type,
       time: this.time,
     };
 

@@ -27,7 +27,7 @@ export class Answer {
   toJS = () => {
     return {
       question: this.question,
-      type: this.type.description,
+      type: this.type,
       answer: this.answer,
       result: this.result,
       answered: this.answered

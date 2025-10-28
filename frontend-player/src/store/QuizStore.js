@@ -112,7 +112,7 @@ class QuizStore {
         this.answerConfirmed = false;
         this.totalTime = msg.time;
         this.elapsedTime = 0;
-        this.setAnswer(this.quiz.currentQuestion.type === "multiplechoice" ? -1 : 0);
+        this.setAnswer(this.quiz.currentQuestion.type === "multiplechoice" ? -1 : undefined);
       });
     }
 
@@ -144,10 +144,19 @@ class QuizStore {
       });
     });
 
-    this.socket.on('questionsFinished', () => {
+    const handleQuestionsFinished = async () => {
+      /* Send the answer if it's not already sent */
+      if(!this.answerConfirmed) {
+        await this.sendAnswer();
+      }
+
       runInAction(() => {
         this.quizIsFinished = true;
       });
+    }
+
+    this.socket.on('questionsFinished', () => {
+      handleQuestionsFinished();
     });
   };
 
@@ -206,6 +215,11 @@ class QuizStore {
     if (!this.socket) {
       return;
     }
+
+    if(this.currentAnswer == undefined) {
+      return;
+    }
+
     try {
       const resp = await this.socket.emitWithAck('answerQuestion', {
         id: this.player.id,

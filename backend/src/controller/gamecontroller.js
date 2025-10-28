@@ -36,7 +36,7 @@ export class GameController {
 
     return {
       title: this.quiz.title,
-      rankingMechanism: this.quiz.rankingMechanism.description,
+      rankingMechanism: this.quiz.rankingMechanism,
       previousQuestion: prevQuestion,
       currentQuestion: curQuestion,
       stats: {
@@ -169,6 +169,10 @@ export class GameController {
       return undefined;
     }
 
+    if(question.type == Question.TYPE.MULTIPLECHOICE && answer < 0) {
+      return player;
+    }
+
     const result = await question.getResult(answer);
 
     player.answers.push(new Answer(questionId, question.type, answer, result, true));
@@ -245,19 +249,18 @@ export class GameController {
       }
 
       /* Calculate the statistics for the questions */
-      const answerValue = await question.getAnswer();
+      let correctAnswer = (await question.getAnswer())?.value;
       question.stats.reset();
 
       this.quiz.players.forEach(player => {
         question.stats.totalPlayers += 1;
 
-        const answer = player.answers.find(answer => answer.question == this.quiz.currentQuestion);
+        const answer = player.answers.find(answer => answer.question == question.id);
         if (answer == undefined) {
-          //player.answers.push(new Answer(this.quiz.currentQuestion, question.type, -1, false, false));
           question.stats.unanswered += 1;
         } else {
           question.stats.answered += 1;
-
+          
           switch (question.type) {
             case Question.TYPE.MULTIPLECHOICE:
               if (answer.result) {
@@ -268,27 +271,31 @@ export class GameController {
               break;
 
             case Question.TYPE.VALUE:
-              question.stats.average += answer.answer;
+              const playerAnswer = parseFloat(answer.answer);
+              question.stats.average += playerAnswer;
 
-              if (answerValue != undefined) {
-                const diff = Math.abs(answer.answer - answerValue);
+              if (correctAnswer != undefined) {
+                correctAnswer = parseFloat(correctAnswer);
+                const diff = Math.abs(playerAnswer - correctAnswer);
 
                 if (question.stats.worstAnswer == undefined) {
-                  question.stats.worstAnswer = answer.answer;
+                  question.stats.worstAnswer = playerAnswer;
+                  question.stats.worstDiff = diff;
                 } else {
-                  const worstDiff = Math.abs(question.stats.worstAnswer - answerValue);
+                  const worstDiff = Math.abs(question.stats.worstAnswer - correctAnswer);
                   if (diff > worstDiff) {
-                    question.stats.worstAnswer = answer.answer;
-                    question.stats.worstDiff = answer.diff;
+                    question.stats.worstAnswer = playerAnswer;
+                    question.stats.worstDiff = diff;
                   }
                 }
 
                 if (question.stats.bestAnswer == undefined) {
-                  question.stats.bestAnswer = answer.answer;
+                  question.stats.bestAnswer = playerAnswer;
+                  question.stats.bestDiff = diff;
                 } else {
-                  const bestDiff = Math.abs(question.stats.bestAnswer - answerValue);
+                  const bestDiff = Math.abs(question.stats.bestAnswer - correctAnswer);
                   if (diff < bestDiff) {
-                    question.stats.bestAnswer = answer.answer;
+                    question.stats.bestAnswer = playerAnswer;
                     question.stats.bestDiff = diff;
                   }
                 }
@@ -298,14 +305,19 @@ export class GameController {
         }
       });
 
+      if(question.type == Question.TYPE.VALUE) {
+        question.stats.average /= question.stats.answered;
+      }
+
       /* Perform ranking of the question for each player */
       for (const player of this.quiz.players) {
         const answer = player.answers.find(answer => answer.question == question.id);
         if (answer != undefined) {
-          if (answer.type === Question.TYPE.MULTIPLECHOICE && answer.answered && answer.result) {
+          if (question.type == Question.TYPE.MULTIPLECHOICE && answer.answered && answer.result) {
             player.ranking += 100;
-          } else if (answer.type === Question.TYPE.VALUE && answer.answered) {
-            player.ranking += await question.getValueRanking(answer.answered);
+          } else if (question.type == Question.TYPE.VALUE && answer.answered) {
+            const points = await question.getValueRanking(parseFloat(answer.answer));
+            player.ranking += points;
           }
         }
       }
@@ -326,6 +338,8 @@ export class GameController {
       default:
         const ranking = await this.rankPlayersMultiplechoiceFirstValueSecond();
         WsApi.get().emitRanking(ranking);
+
+        this.quiz.saveGame();
         return ranking;
     }
   };

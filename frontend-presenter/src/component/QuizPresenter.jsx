@@ -27,7 +27,7 @@ export const QuizPresenter = observer(() => (
                         {idx == 0 && <IconLaurelWreath1 />}
                         {idx == 1 && <IconLaurelWreath2 />}
                         {idx == 2 && <IconLaurelWreath3 />}
-                        {winner.name}
+                        {winner.name} ({winner.ranking} points)
                       </label>
                     ))}
                   </>
