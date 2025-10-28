@@ -34,15 +34,22 @@ body {
 }
 
 .header p {
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-top: 5px;
   margin-bottom: 0px;
   text-align: center;
 }
 
+.walterImage {
+  position: absolute;
+  left: -80px;
+  height: 40vh;
+  bottom: 250px;
+}
+
 .footer {
-  height: 130px;
+  height: 250px;
   background-color: #FFF;
   display: flex;
   align-items: center;
@@ -51,12 +58,22 @@ body {
 }
 
 .footer p {
-  font-size: 1.3rem;
+  font-size: 2rem;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 25px;
   margin-top: 1px;
   color: #213C6B;
+}
+
+.footerImages {
+  display: grid;
+  grid-template-columns: repeat(3, min-content);
+  column-gap: 120px;
+}
+
+.footerImages img {
+  height: 120px;
 }
 
 .quiz {
@@ -78,7 +95,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  padding: 20px;
+  padding: 0px;
   text-align: center;
   box-sizing: border-box;
   flex: 1;
@@ -89,6 +106,11 @@ body {
   flex: 1;
   align-items: center;
   justify-content: center;
+}
+
+.data .dataContent p {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .question {
@@ -250,13 +272,6 @@ body {
   animation: pulseGlow 1s infinite;
 }
 
-.walterImage {
-  position: absolute;
-  left: 0px;
-  height: 40vh;
-  bottom: 0px;
-}
-
 @keyframes pulseGlow {
   0% {
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
@@ -277,10 +292,22 @@ body {
   }
 
   .footer {
-    height: 100px;
+    height: 150px;
   }
 
   .footer p {
     font-size: 1.1rem;
+  }
+
+  .footerImages {
+    column-gap: 80px;
+  }
+
+  .footerImages img {
+    height: 80px;
+  }
+
+  .walterImage {
+    bottom: 150px;
   }
 }
