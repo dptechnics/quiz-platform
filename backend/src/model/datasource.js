@@ -27,7 +27,7 @@ export class Datasource {
    */
   getValueWalterDemo = async () => {
     const stop = Math.floor(Date.now() / 1000) + 300;
-    const start = stop - 30 * 60;
+    const start = stop - 6 * 60 * 60;
 
     try {
       const resp = await fetch(
