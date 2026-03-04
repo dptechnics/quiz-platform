@@ -7,11 +7,11 @@ export default defineConfig({
     host: true,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:3333",
+        target: "https://present.quiz.dptechnics.com",
         changeOrigin: true
       },
       "/socket.io": {
-        target: "ws://127.0.0.1:3333",
+        target: "wss://present.quiz.dptechnics.com",
         ws: true,
         changeOrigin: true
       },

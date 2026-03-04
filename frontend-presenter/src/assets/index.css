@@ -48,6 +48,13 @@ body {
   bottom: 250px;
 }
 
+.walterCat1bisImage {
+  position: absolute;
+  right: 0px;
+  height: 40vh;
+  bottom: 250px;
+}
+
 .footer {
   height: 250px;
   background-color: #FFF;

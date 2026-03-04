@@ -15,6 +15,7 @@ export const QuizPresenter = observer(() => (
                 <QRCodeSVG size="220" fgColor="#FFFFFF" bgColor="#00000000" level="H"  value="https://play.quiz.dptechnics.com" />
                 <p>Win the Walter devkit, Walter Feels <br/>or a Walter module</p>
                 <img src="/walter-half.png" alt="walter" className="walterImage"/>
+                <img src="/walterc1bis-half.png" alt="walter cat 1 bis" className="walterCat1bisImage"/>
               </>
             }
             {quizStore.quiz.currentQuestion.id >= 0 &&
