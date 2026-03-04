@@ -4,13 +4,13 @@
 
 ```
 docker build --platform linux/amd64 --no-cache -t quiz-backend .
-docker tag quiz-backend registry.hub.docker.com/quiz-backend
-docker push registry.hub.docker.com/quiz-backend
+docker tag docker.bluecherry.io:5050/quiz-backend
+docker push docker.bluecherry.io:5050/quiz-backend
 ```
 
 ## How to deploy the docker container
 
 ```
-docker pull registry.hub.docker.com/quiz-backend
-docker run -d -p 3333:3333 --restart=always --name quiz-backend registry.hub.docker.com/quiz-backend
+docker pull docker.bluecherry.io:5050/quiz-backend
+docker run -d -p 3333:3333 --restart=always --name quiz-backend docker.bluecherry.io:5050/quiz-backend
 ```
